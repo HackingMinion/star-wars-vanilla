@@ -1,22 +1,48 @@
-const BASE_URL = "https://swapi.dev/api/"
+const BASE_URL = 'https://swapi.dev/api/'
+const PEOPLE_URL = 'people/'
 
-async function loadPeople() {
-  /* let promise = new Promise((res, rej) => {
-    setTimeout(() => res("Now it's done!"), 1000)
-  }); */
+class Search {
+  constructor() {
+    this.$search = document.querySelector('#search')
+    this.$resultList = document.querySelector('[data-result-list]')
+    this.$search.addEventListener('input', this.searchHandler) // TODO Add debounce
+  }
 
-  let promise = fetch(`${BASE_URL}people/1`)
-  /* .then(response => response.json())
-  .then(data => console.log(data)); */
+  searchHandler = () => {
+    if (this.$search.value.length >= 2) {
+      this.resetResults()
+      this.search()
+    }
+  }
 
-  let result = await promise
+  search = async () => {
+    const result = await fetch(
+      `${BASE_URL}${PEOPLE_URL}?search=${this.$search.value}`
+    )
+    const data = await result.json()
 
-  /* result.json().then(data => {
-    console.log(data.name)
-  }) */
+    this.renderResults(data.results)
+  }
 
-  let data = await result.json()
-  console.log(data.name)
+  renderResults = (results) => {
+    results.forEach((result) => {
+      const $div = document.createElement('div')
+      $div.innerHTML = `<h2>${result.name}</h2>`
+
+      const $filmList = document.createElement('ul')
+      result.films.forEach((film) => {
+        const html = `<li><a href="${film}">${film}</a></li>`
+        $filmList.innerHTML = html
+      })
+      $div.appendChild($filmList)
+
+      this.$resultList.appendChild($div)
+    })
+  }
+
+  resetResults() {
+    this.$resultList.innerHTML = ''
+  }
 }
 
-loadPeople()
+const search = new Search()
